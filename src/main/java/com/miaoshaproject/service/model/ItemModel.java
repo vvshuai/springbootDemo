@@ -3,6 +3,7 @@ package com.miaoshaproject.service.model;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -11,12 +12,15 @@ import java.math.BigDecimal;
  * @Date: Created in 22:03 2020/5/4
  * @Modified By:
  */
-public class ItemModel {
+public class ItemModel implements Serializable {
 
     private Integer id;
 
 
-    //商品名
+    /**
+     * @Description: 商品名
+     * @return:
+     */
     @NotBlank(message = "商品名不为空")
     private String title;
 
@@ -27,7 +31,10 @@ public class ItemModel {
     @NotNull(message = "库存不能不填")
     private Integer stock;
 
-    //描述
+    /**
+     * @Description: 描述
+     * @return:
+     */
     @NotBlank(message = "商品描述不为空")
     private String description;
 

@@ -2,6 +2,7 @@ package com.miaoshaproject.controller.viewobject;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
  * @Date: Created in 22:47 2020/5/4
  * @Modified By:
  */
-public class ItemVO {
+public class ItemVO implements Serializable {
 
     private Integer id;
 

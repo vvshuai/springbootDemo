@@ -14,6 +14,9 @@ public interface UserService {
     //通过用户ID获取对象
     UserModel getUserById(Integer id);
 
+    //通过缓存获取对象
+    UserModel getUserByIdInCache(Integer id);
+
     void register(UserModel userModel) throws BusinessException;
 
     UserModel validateLogin(String telephone, String encrptPassword) throws BusinessException;

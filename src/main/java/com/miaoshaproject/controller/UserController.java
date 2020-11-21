@@ -12,12 +12,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import sun.misc.BASE64Encoder;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Random;
 
 import static com.miaoshaproject.controller.BaseController.CONTENT_TYPE_FORMED;
@@ -39,11 +40,15 @@ public class UserController {
     @Autowired
     private HttpServletRequest httpServletRequest;
 
+    private final static String PREFIX = "item";
 
-    //用户登录
+    /**
+     * @Description: 用户登录
+     * @return:
+     */
     @RequestMapping(value = "/login", method = RequestMethod.POST,consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
-    public CommonReturnType login(@RequestParam(name="telephone")String telephone,
+    public CommonReturnType loin(@RequestParam(name="telephone")String telephone,
                                   @RequestParam(name="password")String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
         //入参校验
         if(org.apache.commons.lang3.StringUtils.isEmpty(telephone)||
@@ -60,6 +65,7 @@ public class UserController {
 
         return CommonReturnType.create(null);
     }
+
     //用户注册接口
     @RequestMapping(value = "/register", method = RequestMethod.POST,consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
@@ -91,9 +97,9 @@ public class UserController {
     public String EncodeByMd5(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         //确定计算方法
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        BASE64Encoder base64Encoder = new BASE64Encoder();
+        Base64.Encoder encoder = Base64.getEncoder();
 
-        String newStr = base64Encoder.encode(md5.digest(string.getBytes("utf-8")));
+        String newStr = encoder.encodeToString(md5.digest(string.getBytes()));
         return newStr;
     }
 

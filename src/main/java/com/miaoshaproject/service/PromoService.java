@@ -13,4 +13,6 @@ import org.springframework.stereotype.Service;
 public interface PromoService {
 
     PromoModel getPromoByItemId(Integer id);
+
+    void pushlishPromo(Integer promoId);
 }

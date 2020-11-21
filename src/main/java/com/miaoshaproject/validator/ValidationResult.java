@@ -12,13 +12,10 @@ import java.util.Map;
  * @Modified By:
  */
 public class ValidationResult {
-
     //检验结果
     private boolean hadErrors = false;
 
     private Map<String, String> errMasMap = new HashMap<>();
-
-
 
     public boolean isHadErrors() {
         return hadErrors;

@@ -13,18 +13,57 @@ import java.util.List;
  */
 public interface ItemService {
 
-    //创建商品
+    /**
+     * @Description: 创建商品
+     * @return:
+     */
     ItemModel createItem(ItemModel itemModel) throws BusinessException;
 
-    //商品列表浏览
+    /**
+     * @Description: 商品列表浏览
+     * @return:
+     */
     List<ItemModel> listItem();
 
-    //商品详情浏览
+    /**
+     * @Description: 商品详情浏览
+     * @return: com.miaoshaproject.service.model.ItemModel
+     */
     ItemModel getItemById(Integer id);
 
-    //减库存
+    /**
+     * @Description: item 及 promo model 缓存模型
+     * @return: com.miaoshaproject.service.model.ItemModel
+     */
+    ItemModel getItemByIdInCache(Integer id);
+
+    /**
+     * @Description: 减库存
+     * @return: boolean
+     */
     boolean decreaseStock(Integer itemId, Integer amount) throws BusinessException;
 
-    //商品销量增加
+    /**
+     * @Description: 异步更新库存
+     * @return: boolean
+     */
+    boolean asyncDecreaseStock(Integer itemId, Integer amount);
+
+    /**
+     * @Description: 初始化库存流水
+     * @return:
+     */
+    String initStockLog(Integer itemId, Integer amount);
+
+    /**
+     * @Description: 库存互补
+     * @return:
+     */
+    boolean increseaseStock(Integer itemId, Integer amount);
+
+    /**
+     * @Description: 商品销量增加
+     * @return: void
+     */
     void increaseSales(Integer itemId, Integer amount) throws BusinessException;
 }
