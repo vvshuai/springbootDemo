@@ -12,7 +12,12 @@ import org.springframework.stereotype.Service;
 
 public interface PromoService {
 
+    // 根据itemID获取即将进行的活动
     PromoModel getPromoByItemId(Integer id);
 
+    // 活动发布
     void pushlishPromo(Integer promoId);
+
+    // 生成秒杀用的 令牌
+    String generateSecondKillToken(Integer promoId, Integer itemId, Integer userId);
 }

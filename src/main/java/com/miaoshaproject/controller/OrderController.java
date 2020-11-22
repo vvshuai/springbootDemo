@@ -1,5 +1,6 @@
 package com.miaoshaproject.controller;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.miaoshaproject.error.BusinessException;
 import com.miaoshaproject.error.EmBusinessError;
 import com.miaoshaproject.mq.MqProducer;
@@ -13,7 +14,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.*;
 
 /**
  * @Author: vvshuai
@@ -41,11 +44,38 @@ public class OrderController extends BaseController{
     @Autowired
     MqProducer mqProducer;
 
+    private ExecutorService executorService;
+
+    // 增加令牌桶
+    private RateLimiter orderCreateRateLimiter;
+
+    @PostConstruct
+    public void init() {
+        executorService = Executors.newFixedThreadPool(20);
+
+        orderCreateRateLimiter = RateLimiter.create(300);
+
+    }
+
+    // 生成秒杀令牌
+    @RequestMapping(value = "/generatetoken", method = RequestMethod.POST,consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
+    public CommonReturnType createOrder(@RequestParam(name="itemId")Integer itemId,
+                                        @RequestParam(name="promoId", required = false)Integer promoId) throws BusinessException {
+        // 待更新
+        return null;
+    }
+
+
     @RequestMapping(value = "/createorder", method = RequestMethod.POST,consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType createOrder(@RequestParam(name="itemId")Integer itemId,
                                         @RequestParam(name="amount")Integer amount,
                                         @RequestParam(name="promoId", required = false)Integer promoId) throws BusinessException {
+        if(!orderCreateRateLimiter.tryAcquire()){
+            throw new BusinessException(EmBusinessError.RATELIMIT);
+        }
+
         Boolean isLogin = (Boolean)httpServletRequest.getSession().getAttribute("LOGIN");
 
         if(isLogin == null || !isLogin.booleanValue()){
@@ -62,15 +92,30 @@ public class OrderController extends BaseController{
             throw new BusinessException(EmBusinessError.STOCK_NOT_ENOUGH);
         }
 
-        //加入库存流水
-        String stockLogId = itemService.initStockLog(itemId, amount);
+        // 同步调用线程池的submit方法
+        // 拥塞窗口为20的等待队列，用来队列化泄洪
+        Future<Object> future = executorService.submit(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                String stockLogId = itemService.initStockLog(itemId, amount);
 
 
-        // 完成下单事务型消息
-        boolean b = mqProducer.transactionAsyncReduceStock(userModel.getId(), promoId, itemId, amount, stockLogId);
-        //下单失败
-        if(b == false){
-            throw new BusinessException(EmBusinessError.UNKNOWN_ERROR, "下单失败");
+                // 完成下单事务型消息
+                boolean b = mqProducer.transactionAsyncReduceStock(userModel.getId(), promoId, itemId, amount, stockLogId);
+                //下单失败
+                if (b == false) {
+                    throw new BusinessException(EmBusinessError.UNKNOWN_ERROR, "下单失败");
+                }
+                return null;
+            }
+        });
+
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            throw new BusinessException(EmBusinessError.UNKNOWN_ERROR);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
 
         return CommonReturnType.create(null);
